@@ -51,7 +51,10 @@ Sahayak is a compassionate AI-powered companion designed specifically for senior
    cd frontend
    npm start
    ```
-
+## live preview
+ ![Desk top view](destopview.png)
+ ![mobile view](mobile-view.png)
+ 
 ## Security and Privacy
 
 - End-to-end encryption for sensitive data
