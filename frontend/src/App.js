@@ -11,6 +11,8 @@ import WellnessMode from './components/modes/WellnessMode';
 import BookingMode from './components/modes/BookingMode';
 import EmergencyContact from './components/EmergencyContact';
 import Layout from './components/Layout';
+import Wallet from './components/Wallet';
+import Calendar from './components/Calendar';
 
 // Theme configuration
 const theme = createTheme({
@@ -49,9 +51,18 @@ const theme = createTheme({
   },
 });
 
-const clerkPubKey = process.env.REACT_APP_CLERK_PUBLISHABLE_KEY;
-
 function App() {
+  const clerkPubKey = process.env.REACT_APP_CLERK_PUBLISHABLE_KEY;
+
+  if (!clerkPubKey) {
+    return (
+      <div style={{ padding: 20 }}>
+        <h1>Error: Missing Clerk Publishable Key</h1>
+        <p>Please set your REACT_APP_CLERK_PUBLISHABLE_KEY in the .env file</p>
+      </div>
+    );
+  }
+
   return (
     <ClerkProvider publishableKey={clerkPubKey}>
       <ThemeProvider theme={theme}>
@@ -78,6 +89,8 @@ function App() {
                         <Route path="/wellness" element={<WellnessMode />} />
                         <Route path="/booking" element={<BookingMode />} />
                         <Route path="/emergency" element={<EmergencyContact />} />
+                        <Route path="/wallet" element={<Wallet />} />
+                        <Route path="/calendar" element={<Calendar />} />
                       </Routes>
                     </Layout>
                   </SignedIn>

@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const { ClerkExpressRequireAuth } = require('@clerk/clerk-sdk-node');
+const { ClerkExpressWithAuth } = require('@clerk/clerk-sdk-node');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
@@ -21,16 +21,31 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  ssl: true,
+  tls: true,
+  tlsAllowInvalidCertificates: true
+})
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
+// Clerk authentication middleware
+const requireAuth = ClerkExpressWithAuth({
+  // If authentication fails, return a 401 Unauthorized response
+  onError: (err, req, res) => {
+    console.error('Authentication error:', err);
+    res.status(401).json({ error: 'Unauthorized' });
+  },
+});
+
 // Routes
 app.use('/api/health', require('./routes/healthRoutes'));
-app.use('/api/religious', ClerkExpressRequireAuth(), require('./routes/religiousRoutes'));
-app.use('/api/wellness', ClerkExpressRequireAuth(), require('./routes/wellnessRoutes'));
-app.use('/api/booking', ClerkExpressRequireAuth(), require('./routes/bookingRoutes'));
-app.use('/api/emergency', ClerkExpressRequireAuth(), require('./routes/emergencyRoutes'));
+app.use('/api/religious', requireAuth, require('./routes/religiousRoutes'));
+app.use('/api/wellness', requireAuth, require('./routes/wellnessRoutes'));
+app.use('/api/booking', requireAuth, require('./routes/bookingRoutes'));
+app.use('/api/emergency', requireAuth, require('./routes/emergencyRoutes'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -38,7 +53,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Something went wrong!' });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
